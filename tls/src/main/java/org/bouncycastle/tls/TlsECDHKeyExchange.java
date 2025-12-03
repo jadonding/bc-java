@@ -20,6 +20,10 @@ public class TlsECDHKeyExchange
         {
         case KeyExchangeAlgorithm.ECDH_ECDSA:
         case KeyExchangeAlgorithm.ECDH_RSA:
+        /*
+         * GB/T 38636-2020 (TLCP) - SM2 key exchange
+         */
+        case KeyExchangeAlgorithm.SM2:
             return keyExchange;
         default:
             throw new IllegalArgumentException("unsupported key exchange algorithm");
