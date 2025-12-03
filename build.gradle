@@ -69,8 +69,6 @@ configure(allprojects.findAll {it.name != 'bom'}) {
     }
     tasks.withType(JavaCompile).configureEach {
         options.errorprone {
-            // Disable errorprone for Java 17 compatibility
-            enabled = false
             // Checks that cannot be enabled because implementing their suggestions
             // would break backward compatibility.
             check('ComparableType', net.ltgt.gradle.errorprone.CheckSeverity.OFF)
@@ -244,7 +242,7 @@ configure(subprojects.findAll {it.name != 'bom'}) {
     dependencies {
         checkstyle files("$rootDir/config/checkstyle/lib/methodchecker-1.0.0.jar")
         checkstyle 'com.puppycrawl.tools:checkstyle:9.0'
-        // errorprone "com.google.errorprone:error_prone_core:2.43.0"
+        errorprone "com.google.errorprone:error_prone_core:2.43.0"
     }
 
     checkstyle {
