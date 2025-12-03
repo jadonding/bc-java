@@ -467,7 +467,9 @@ public class TlsServerProtocol
         }
         else
         {
-            // Try TLS first, then TLCP
+            // NOTE: Try TLS first, then TLCP. TLCP and TLS versions are mutually exclusive -
+            // a client will only offer one protocol type. The fallback to TLCP is for cases
+            // where no TLS versions are present in the supported versions extension.
             clientVersion = ProtocolVersion.getLatestTLS(tlsServerContext.getClientSupportedVersions());
             if (null == clientVersion)
             {

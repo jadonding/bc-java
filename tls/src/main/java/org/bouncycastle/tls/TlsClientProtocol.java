@@ -1805,15 +1805,19 @@ public class TlsClientProtocol
         tlsClientContext.setClientVersion(latestVersion);
         tlsClientContext.setClientSupportedVersions(supportedVersions);
 
+        // NOTE: TLCP and TLS are mutually exclusive protocols - a client offers either TLCP versions
+        // or TLS versions, but not both. TLCP follows the TLS 1.1 handshake structure.
         final boolean offeringTLSv12Minus = !usingTLCP && ProtocolVersion.TLSv12.isEqualOrLaterVersionOf(earliestVersion);
         final boolean offeringTLSv13Plus = !usingTLCP && ProtocolVersion.TLSv13.isEqualOrEarlierVersionOf(latestVersion);
 
         {
+            // TLCP requires GMTUnixTime in client random
             boolean useGMTUnixTime = (usingTLCP || !offeringTLSv13Plus) && tlsClient.shouldUseGMTUnixTime();
 
             securityParameters.clientRandom = createRandomBlock(useGMTUnixTime, tlsClientContext);
         }
 
+        // TLCP supports session resumption similar to TLS 1.2
         TlsSession sessionToResume = (usingTLCP || offeringTLSv12Minus) ? tlsClient.getSessionToResume() : null;
 
         // NOTE: Client is free to modify the cipher suites up until getSessionToResume
