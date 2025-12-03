@@ -4693,6 +4693,12 @@ public class TlsUtils
         case KeyExchangeAlgorithm.ECDHE_RSA:
             return factory.createECDHEKeyExchangeClient(keyExchange);
 
+        /*
+         * GB/T 38636-2020 (TLCP) - SM2 key exchange
+         */
+        case KeyExchangeAlgorithm.SM2:
+            return factory.createECDHKeyExchange(keyExchange);
+
         case KeyExchangeAlgorithm.RSA:
             return factory.createRSAKeyExchange(keyExchange);
 
@@ -4748,6 +4754,12 @@ public class TlsUtils
         case KeyExchangeAlgorithm.ECDHE_ECDSA:
         case KeyExchangeAlgorithm.ECDHE_RSA:
             return factory.createECDHEKeyExchangeServer(keyExchange, server.getECDHConfig());
+
+        /*
+         * GB/T 38636-2020 (TLCP) - SM2 key exchange
+         */
+        case KeyExchangeAlgorithm.SM2:
+            return factory.createECDHKeyExchange(keyExchange);
 
         case KeyExchangeAlgorithm.RSA:
             return factory.createRSAKeyExchange(keyExchange);
