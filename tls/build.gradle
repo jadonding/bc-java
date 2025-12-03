@@ -59,9 +59,15 @@ sourceSets {
 
 dependencies {
 
+    implementation project(':core')
     implementation project(':prov')
     implementation project(':util')
     implementation project(':pkix')
+
+    testImplementation project(':core')
+    testImplementation project(':prov')
+    testImplementation project(':util')
+    testImplementation project(':pkix')
 
     java9Implementation project(':prov')
     java9Implementation project(':util')
