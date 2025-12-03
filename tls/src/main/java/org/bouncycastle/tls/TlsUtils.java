@@ -4334,18 +4334,34 @@ public class TlsUtils
 
     public static boolean isValidVersionForCipherSuite(int cipherSuite, ProtocolVersion version)
     {
-        version = version.getEquivalentTLSVersion();
-
         ProtocolVersion minimumVersion = getMinimumVersion(cipherSuite);
-        if (minimumVersion == version)
+
+        // Special handling for TLCP cipher suites: if the minimum version is TLCP and the
+        // negotiated version is also TLCP, they must match or be compatible
+        if (minimumVersion.isTLCP() && version.isTLCP())
+        {
+            return minimumVersion.isEqualOrEarlierVersionOf(version);
+        }
+
+        // For non-TLCP, convert to equivalent TLS version for comparison
+        version = version.getEquivalentTLSVersion();
+        ProtocolVersion equivalentMinimum = minimumVersion.getEquivalentTLSVersion();
+
+        if (equivalentMinimum == null)
+        {
+            // TLCP minimum version with non-TLCP protocol version is invalid
+            return false;
+        }
+
+        if (equivalentMinimum == version)
         {
             return true;
         }
-        if (!minimumVersion.isEarlierVersionOf(version))
+        if (!equivalentMinimum.isEarlierVersionOf(version))
         {
             return false;
         }
-        return ProtocolVersion.TLSv13.isEqualOrEarlierVersionOf(minimumVersion)
+        return ProtocolVersion.TLSv13.isEqualOrEarlierVersionOf(equivalentMinimum)
             || ProtocolVersion.TLSv13.isLaterVersionOf(version);
     }
 
