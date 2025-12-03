@@ -1773,6 +1773,11 @@ public class TlsClientProtocol
                 // TODO[tls13] Prevent offering SSLv3 AND TLSv13?
                 recordStream.setWriteVersion(ProtocolVersion.SSLv3);
             }
+            else if (ProtocolVersion.getLatestTLCP(supportedVersions) != null)
+            {
+                // TLCP protocol uses version 0x0101 in record layer
+                recordStream.setWriteVersion(ProtocolVersion.TLCPv11);
+            }
             else
             {
                 recordStream.setWriteVersion(ProtocolVersion.TLSv10);
@@ -1782,7 +1787,17 @@ public class TlsClientProtocol
         ProtocolVersion earliestVersion = ProtocolVersion.getEarliestTLS(supportedVersions);
         ProtocolVersion latestVersion = ProtocolVersion.getLatestTLS(supportedVersions);
 
-        if (!ProtocolVersion.isSupportedTLSVersionClient(latestVersion))
+        // Check if we're using TLCP
+        boolean usingTLCP = false;
+        if (null == latestVersion)
+        {
+            // Try TLCP versions
+            earliestVersion = ProtocolVersion.getEarliestTLCP(supportedVersions);
+            latestVersion = ProtocolVersion.getLatestTLCP(supportedVersions);
+            usingTLCP = (latestVersion != null);
+        }
+
+        if (!ProtocolVersion.isSupportedTLSVersionClient(latestVersion) && !ProtocolVersion.isSupportedTLCPVersionClient(latestVersion))
         {
             throw new TlsFatalAlert(AlertDescription.internal_error);
         }
@@ -1790,16 +1805,16 @@ public class TlsClientProtocol
         tlsClientContext.setClientVersion(latestVersion);
         tlsClientContext.setClientSupportedVersions(supportedVersions);
 
-        final boolean offeringTLSv12Minus = ProtocolVersion.TLSv12.isEqualOrLaterVersionOf(earliestVersion);
-        final boolean offeringTLSv13Plus = ProtocolVersion.TLSv13.isEqualOrEarlierVersionOf(latestVersion);
+        final boolean offeringTLSv12Minus = !usingTLCP && ProtocolVersion.TLSv12.isEqualOrLaterVersionOf(earliestVersion);
+        final boolean offeringTLSv13Plus = !usingTLCP && ProtocolVersion.TLSv13.isEqualOrEarlierVersionOf(latestVersion);
 
         {
-            boolean useGMTUnixTime = !offeringTLSv13Plus && tlsClient.shouldUseGMTUnixTime();
+            boolean useGMTUnixTime = (usingTLCP || !offeringTLSv13Plus) && tlsClient.shouldUseGMTUnixTime();
 
             securityParameters.clientRandom = createRandomBlock(useGMTUnixTime, tlsClientContext);
         }
 
-        TlsSession sessionToResume = offeringTLSv12Minus ? tlsClient.getSessionToResume() : null;
+        TlsSession sessionToResume = (usingTLCP || offeringTLSv12Minus) ? tlsClient.getSessionToResume() : null;
 
         // NOTE: Client is free to modify the cipher suites up until getSessionToResume
         int[] offeredCipherSuites = tlsClient.getCipherSuites();

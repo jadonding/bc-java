@@ -213,6 +213,22 @@ public final class ProtocolVersion
             && fullVersion <= SERVER_LATEST_SUPPORTED_TLS.getFullVersion();
     }
 
+    /**
+     * Returns true if the given version is a supported TLCP version for clients.
+     */
+    static boolean isSupportedTLCPVersionClient(ProtocolVersion version)
+    {
+        return null != version && version.isTLCP();
+    }
+
+    /**
+     * Returns true if the given version is a supported TLCP version for servers.
+     */
+    static boolean isSupportedTLCPVersionServer(ProtocolVersion version)
+    {
+        return null != version && version.isTLCP();
+    }
+
     private int version;
     private String name;
 
