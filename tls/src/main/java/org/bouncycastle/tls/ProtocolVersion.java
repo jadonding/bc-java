@@ -15,6 +15,11 @@ public final class ProtocolVersion
     public static final ProtocolVersion DTLSv12 = new ProtocolVersion(0xFEFD, "DTLS 1.2");
     public static final ProtocolVersion DTLSv13 = new ProtocolVersion(0xFEFC, "DTLS 1.3");
 
+    /*
+     * GB/T 38636-2020 (TLCP)
+     */
+    public static final ProtocolVersion TLCPv11 = new ProtocolVersion(0x0101, "TLCP 1.1");
+
     static final ProtocolVersion CLIENT_EARLIEST_SUPPORTED_DTLS = DTLSv10;
     static final ProtocolVersion CLIENT_EARLIEST_SUPPORTED_TLS = SSLv3;
     static final ProtocolVersion CLIENT_LATEST_SUPPORTED_DTLS = DTLSv12;
@@ -120,6 +125,54 @@ public final class ProtocolVersion
         return latest;
     }
 
+    /**
+     * Returns the earliest TLCP version from the given array of versions.
+     * For TLCP, higher minor version means later version (same as TLS).
+     */
+    public static ProtocolVersion getEarliestTLCP(ProtocolVersion[] versions)
+    {
+        ProtocolVersion earliest = null;
+        if (null != versions)
+        {
+            for (int i = 0; i < versions.length; ++i)
+            {
+                ProtocolVersion next = versions[i];
+                if (null != next && next.isTLCP())
+                {
+                    if (null == earliest || next.getMinorVersion() < earliest.getMinorVersion())
+                    {
+                        earliest = next;
+                    }
+                }
+            }
+        }
+        return earliest;
+    }
+
+    /**
+     * Returns the latest TLCP version from the given array of versions.
+     * For TLCP, higher minor version means later version (same as TLS).
+     */
+    public static ProtocolVersion getLatestTLCP(ProtocolVersion[] versions)
+    {
+        ProtocolVersion latest = null;
+        if (null != versions)
+        {
+            for (int i = 0; i < versions.length; ++i)
+            {
+                ProtocolVersion next = versions[i];
+                if (null != next && next.isTLCP())
+                {
+                    if (null == latest || next.getMinorVersion() > latest.getMinorVersion())
+                    {
+                        latest = next;
+                    }
+                }
+            }
+        }
+        return latest;
+    }
+
     static boolean isSupportedDTLSVersionClient(ProtocolVersion version)
     {
         return null != version
@@ -158,6 +211,22 @@ public final class ProtocolVersion
 
         return fullVersion >= SERVER_EARLIEST_SUPPORTED_TLS.getFullVersion()
             && fullVersion <= SERVER_LATEST_SUPPORTED_TLS.getFullVersion();
+    }
+
+    /**
+     * Returns true if the given version is a supported TLCP version for clients.
+     */
+    static boolean isSupportedTLCPVersionClient(ProtocolVersion version)
+    {
+        return null != version && version.isTLCP();
+    }
+
+    /**
+     * Returns true if the given version is a supported TLCP version for servers.
+     */
+    static boolean isSupportedTLCPVersionServer(ProtocolVersion version)
+    {
+        return null != version && version.isTLCP();
     }
 
     private int version;
@@ -229,10 +298,24 @@ public final class ProtocolVersion
         return getMajorVersion() == 0x03;
     }
 
+    /**
+     * Returns true if this is a TLCP (Transport Layer Cryptographic Protocol) version.
+     * TLCP is defined by GB/T 38636-2020.
+     */
+    public boolean isTLCP()
+    {
+        return getMajorVersion() == 0x01;
+    }
+
     public ProtocolVersion getEquivalentTLSVersion()
     {
         switch (getMajorVersion())
         {
+        case 0x01:
+            /*
+             * TLCP is based on TLS 1.1 structure
+             */
+            return TLSv11;
         case 0x03:
             return this;
         case 0xFE:
@@ -367,6 +450,18 @@ public final class ProtocolVersion
     {
         switch (major)
         {
+        case 0x01:
+        {
+            /*
+             * GB/T 38636-2020 (TLCP)
+             */
+            switch (minor)
+            {
+            case 0x01:
+                return TLCPv11;
+            }
+            return getUnknownVersion(major, minor, "TLCP");
+        }
         case 0x03:
         {
             switch (minor)

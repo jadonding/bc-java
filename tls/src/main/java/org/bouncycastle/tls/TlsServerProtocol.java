@@ -227,7 +227,10 @@ public class TlsServerProtocol
             {
                 securityParameters.serverRandom = createRandomBlock(false, tlsServerContext);
 
-                if (!serverVersion.equals(ProtocolVersion.getLatestTLS(tlsServer.getProtocolVersions())))
+                ProtocolVersion latestProtocol = serverVersion.isTLCP() 
+                    ? ProtocolVersion.getLatestTLCP(tlsServer.getProtocolVersions())
+                    : ProtocolVersion.getLatestTLS(tlsServer.getProtocolVersions());
+                if (!serverVersion.equals(latestProtocol))
                 {
                     TlsUtils.writeDowngradeMarker(serverVersion, securityParameters.getServerRandom());
                 }
@@ -431,7 +434,7 @@ public class TlsServerProtocol
         throws IOException
     {
         ProtocolVersion clientLegacyVersion = clientHello.getVersion();
-        if (!clientLegacyVersion.isTLS())
+        if (!clientLegacyVersion.isTLS() && !clientLegacyVersion.isTLCP())
         {
             throw new TlsFatalAlert(AlertDescription.illegal_parameter);
         }
@@ -453,17 +456,32 @@ public class TlsServerProtocol
                 clientVersion = ProtocolVersion.TLSv12;
             }
 
-            tlsServerContext.setClientSupportedVersions(clientVersion.downTo(ProtocolVersion.SSLv3));
+            if (clientVersion.isTLCP())
+            {
+                tlsServerContext.setClientSupportedVersions(new ProtocolVersion[]{ clientVersion });
+            }
+            else
+            {
+                tlsServerContext.setClientSupportedVersions(clientVersion.downTo(ProtocolVersion.SSLv3));
+            }
         }
         else
         {
+            // NOTE: Try TLS first, then TLCP. TLCP and TLS versions are mutually exclusive -
+            // a client will only offer one protocol type. The fallback to TLCP is for cases
+            // where no TLS versions are present in the supported versions extension.
             clientVersion = ProtocolVersion.getLatestTLS(tlsServerContext.getClientSupportedVersions());
+            if (null == clientVersion)
+            {
+                clientVersion = ProtocolVersion.getLatestTLCP(tlsServerContext.getClientSupportedVersions());
+            }
         }
 
         // Set the legacy_record_version to use for early alerts 
         recordStream.setWriteVersion(clientVersion);
 
-        if (!ProtocolVersion.SERVER_EARLIEST_SUPPORTED_TLS.isEqualOrEarlierVersionOf(clientVersion))
+        if (!ProtocolVersion.SERVER_EARLIEST_SUPPORTED_TLS.isEqualOrEarlierVersionOf(clientVersion) &&
+            !ProtocolVersion.isSupportedTLCPVersionServer(clientVersion))
         {
             throw new TlsFatalAlert(AlertDescription.protocol_version);
         }
@@ -531,7 +549,10 @@ public class TlsServerProtocol
 
             securityParameters.serverRandom = createRandomBlock(useGMTUnixTime, tlsServerContext);
 
-            if (!serverVersion.equals(ProtocolVersion.getLatestTLS(tlsServer.getProtocolVersions())))
+            ProtocolVersion latestProtocol = serverVersion.isTLCP() 
+                ? ProtocolVersion.getLatestTLCP(tlsServer.getProtocolVersions())
+                : ProtocolVersion.getLatestTLS(tlsServer.getProtocolVersions());
+            if (!serverVersion.equals(latestProtocol))
             {
                 TlsUtils.writeDowngradeMarker(serverVersion, securityParameters.getServerRandom());
             }

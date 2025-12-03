@@ -21,6 +21,11 @@ public class MACAlgorithm
     public static final int hmac_sha384 = 4;
     public static final int hmac_sha512 = 5;
 
+    /*
+     * GB/T 38636-2020 (TLCP)
+     */
+    public static final int hmac_sm3 = 6;
+
     public static String getName(int macAlgorithm)
     {
         switch (macAlgorithm)
@@ -37,6 +42,8 @@ public class MACAlgorithm
             return "hmac_sha384";
         case hmac_sha512:
             return "hmac_sha512";
+        case hmac_sm3:
+            return "hmac_sm3";
         default:
             return "UNKNOWN";
         }
@@ -56,6 +63,7 @@ public class MACAlgorithm
         case hmac_sha256:
         case hmac_sha384:
         case hmac_sha512:
+        case hmac_sm3:
             return true;
         default:
             return false;
