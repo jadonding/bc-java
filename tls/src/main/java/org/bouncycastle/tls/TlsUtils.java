@@ -360,6 +360,22 @@ public class TlsUtils
         return isTLSv13(context.getServerVersion());
     }
 
+    /**
+     * Returns true if the given protocol version is TLCP (GB/T 38636-2020).
+     */
+    public static boolean isTLCP(ProtocolVersion version)
+    {
+        return null != version && version.isTLCP();
+    }
+
+    /**
+     * Returns true if the context is using TLCP (GB/T 38636-2020).
+     */
+    public static boolean isTLCP(TlsContext context)
+    {
+        return isTLCP(context.getServerVersion());
+    }
+
     public static void writeUint8(short i, OutputStream output)
         throws IOException
     {
@@ -3116,6 +3132,28 @@ public class TlsUtils
         case CipherSuite.TLS_SM4_GCM_SM3:
             return EncryptionAlgorithm.SM4_GCM;
 
+        /*
+         * GB/T 38636-2020 (TLCP) - SM4 CBC cipher suites
+         */
+        case CipherSuite.TLCP_ECDHE_SM4_CBC_SM3:
+        case CipherSuite.TLCP_ECC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_RSA_SM4_CBC_SM3:
+        case CipherSuite.TLCP_RSA_SM4_CBC_SHA256:
+            return EncryptionAlgorithm.SM4_CBC;
+
+        /*
+         * GB/T 38636-2020 (TLCP) - SM4 GCM cipher suites
+         */
+        case CipherSuite.TLCP_ECDHE_SM4_GCM_SM3:
+        case CipherSuite.TLCP_ECC_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBC_SM4_GCM_SM3:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SM3:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SHA256:
+            return EncryptionAlgorithm.SM4_GCM;
+
         default:
             return -1;
         }
@@ -3510,6 +3548,27 @@ public class TlsUtils
         case CipherSuite.TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA:
             return KeyExchangeAlgorithm.SRP_RSA;
 
+        /*
+         * GB/T 38636-2020 (TLCP)
+         */
+        case CipherSuite.TLCP_ECC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_ECC_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBC_SM4_GCM_SM3:
+            return KeyExchangeAlgorithm.SM2;
+
+        case CipherSuite.TLCP_ECDHE_SM4_CBC_SM3:
+        case CipherSuite.TLCP_ECDHE_SM4_GCM_SM3:
+            return KeyExchangeAlgorithm.ECDHE_ECDSA;
+
+        case CipherSuite.TLCP_RSA_SM4_CBC_SM3:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SM3:
+        case CipherSuite.TLCP_RSA_SM4_CBC_SHA256:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SHA256:
+            return KeyExchangeAlgorithm.RSA;
+
         default:
             return -1;
         }
@@ -3651,6 +3710,15 @@ public class TlsUtils
         case CipherSuite.TLS_SHA384_SHA384:
         case CipherSuite.TLS_SM4_CCM_SM3:
         case CipherSuite.TLS_SM4_GCM_SM3:
+        /*
+         * GB/T 38636-2020 (TLCP) - GCM cipher suites (no MAC)
+         */
+        case CipherSuite.TLCP_ECDHE_SM4_GCM_SM3:
+        case CipherSuite.TLCP_ECC_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBC_SM4_GCM_SM3:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SM3:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SHA256:
             return MACAlgorithm._null;
 
         case CipherSuite.TLS_DH_anon_WITH_3DES_EDE_CBC_SHA:
@@ -3833,6 +3901,22 @@ public class TlsUtils
         case CipherSuite.TLS_RSA_PSK_WITH_NULL_SHA384:
         case CipherSuite.TLS_RSA_WITH_ARIA_256_CBC_SHA384:
             return MACAlgorithm.hmac_sha384;
+
+        /*
+         * GB/T 38636-2020 (TLCP) - CBC cipher suites with SM3 MAC
+         */
+        case CipherSuite.TLCP_ECDHE_SM4_CBC_SM3:
+        case CipherSuite.TLCP_ECC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_RSA_SM4_CBC_SM3:
+            return MACAlgorithm.hmac_sm3;
+
+        /*
+         * GB/T 38636-2020 (TLCP) - CBC cipher suites with SHA256 MAC
+         */
+        case CipherSuite.TLCP_RSA_SM4_CBC_SHA256:
+            return MACAlgorithm.hmac_sha256;
 
         default:
             return -1;
@@ -4036,6 +4120,23 @@ public class TlsUtils
         case CipherSuite.TLS_RSA_WITH_CAMELLIA_256_GCM_SHA384:
         case CipherSuite.TLS_RSA_WITH_NULL_SHA256:
             return ProtocolVersion.TLSv12;
+
+        /*
+         * GB/T 38636-2020 (TLCP)
+         */
+        case CipherSuite.TLCP_ECDHE_SM4_CBC_SM3:
+        case CipherSuite.TLCP_ECDHE_SM4_GCM_SM3:
+        case CipherSuite.TLCP_ECC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_ECC_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBSDH_SM4_GCM_SM3:
+        case CipherSuite.TLCP_IBC_SM4_CBC_SM3:
+        case CipherSuite.TLCP_IBC_SM4_GCM_SM3:
+        case CipherSuite.TLCP_RSA_SM4_CBC_SM3:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SM3:
+        case CipherSuite.TLCP_RSA_SM4_CBC_SHA256:
+        case CipherSuite.TLCP_RSA_SM4_GCM_SHA256:
+            return ProtocolVersion.TLCPv11;
 
         default:
             return ProtocolVersion.SSLv3;

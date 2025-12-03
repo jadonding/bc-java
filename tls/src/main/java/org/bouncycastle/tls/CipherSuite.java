@@ -463,4 +463,20 @@ public class CipherSuite
     public static final int TLS_GOSTR341112_256_WITH_KUZNYECHIK_CTR_OMAC = 0xC100;
     public static final int TLS_GOSTR341112_256_WITH_MAGMA_CTR_OMAC = 0xC101;
     public static final int TLS_GOSTR341112_256_WITH_28147_CNT_IMIT = 0xC102;
+
+    /*
+     * GB/T 38636-2020 (TLCP)
+     */
+    public static final int TLCP_ECDHE_SM4_CBC_SM3 = 0xE011;
+    public static final int TLCP_ECDHE_SM4_GCM_SM3 = 0xE051;
+    public static final int TLCP_ECC_SM4_CBC_SM3 = 0xE013;
+    public static final int TLCP_ECC_SM4_GCM_SM3 = 0xE053;
+    public static final int TLCP_IBSDH_SM4_CBC_SM3 = 0xE015;
+    public static final int TLCP_IBSDH_SM4_GCM_SM3 = 0xE055;
+    public static final int TLCP_IBC_SM4_CBC_SM3 = 0xE017;
+    public static final int TLCP_IBC_SM4_GCM_SM3 = 0xE057;
+    public static final int TLCP_RSA_SM4_CBC_SM3 = 0xE019;
+    public static final int TLCP_RSA_SM4_GCM_SM3 = 0xE059;
+    public static final int TLCP_RSA_SM4_CBC_SHA256 = 0xE01C;
+    public static final int TLCP_RSA_SM4_GCM_SHA256 = 0xE05C;
 }
