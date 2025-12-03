@@ -5937,7 +5937,7 @@ public class TlsUtils
         SecurityParameters securityParameters = clientContext.getSecurityParametersHandshake();
         ProtocolVersion negotiatedVersion = securityParameters.getNegotiatedVersion();
 
-        if (!ProtocolVersion.isSupportedTLSVersionClient(negotiatedVersion))
+        if (!ProtocolVersion.isSupportedTLSVersionClient(negotiatedVersion) && !ProtocolVersion.isSupportedTLCPVersionClient(negotiatedVersion))
         {
             throw new TlsFatalAlert(AlertDescription.internal_error);
         }
@@ -5952,7 +5952,7 @@ public class TlsUtils
         SecurityParameters securityParameters = serverContext.getSecurityParametersHandshake();
         ProtocolVersion negotiatedVersion = securityParameters.getNegotiatedVersion();
 
-        if (!ProtocolVersion.isSupportedTLSVersionServer(negotiatedVersion))
+        if (!ProtocolVersion.isSupportedTLSVersionServer(negotiatedVersion) && !ProtocolVersion.isSupportedTLCPVersionServer(negotiatedVersion))
         {
             throw new TlsFatalAlert(AlertDescription.internal_error);
         }

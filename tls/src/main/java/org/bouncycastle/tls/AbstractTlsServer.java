@@ -383,6 +383,10 @@ public abstract class AbstractTlsServer
             {
                 latestServerVersion = ProtocolVersion.getLatestDTLS(serverVersions);
             }
+            else if (clientVersion.isTLCP())
+            {
+                latestServerVersion = ProtocolVersion.getLatestTLCP(serverVersions);
+            }
             else
             {
                 throw new TlsFatalAlert(AlertDescription.internal_error);
