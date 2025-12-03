@@ -1,11 +1,14 @@
 package org.bouncycastle.test;
 
 import org.bouncycastle.tls.CipherSuite;
+import org.bouncycastle.tls.NamedGroup;
 import org.bouncycastle.tls.ProtocolVersion;
 import org.bouncycastle.tls.crypto.TlsCrypto;
+import org.bouncycastle.util.Integers;
 
 import java.io.IOException;
 import java.security.Security;
+import java.util.Vector;
 
 /**
  * @author 丁琪
@@ -14,12 +17,12 @@ import java.security.Security;
 public class TlcpScanClient extends DefaultTlsScanClient {
 
     private static final ProtocolVersion[] PROTOCOL_VERSIONS = TLCP_PROTOCOL_VERSIONS.toArray(new ProtocolVersion[0]);
-    private static final int[] DEFAULT_CIPHER_SUITES = new int[]{
-        /*
-         * GMSSL 1.1
-         */
-        CipherSuite.TLCP_ECC_SM4_GCM_SM3,
-        CipherSuite.TLCP_ECC_SM4_CBC_SM3,
+    private static final int[] DEFAULT_CIPHER_SUITES = new int[] {
+            /*
+             * GMSSL 1.1 - Testing ECDHE only
+             */
+            CipherSuite.TLCP_ECDHE_SM4_GCM_SM3,
+            CipherSuite.TLCP_ECDHE_SM4_CBC_SM3,
     };
 
     public TlcpScanClient(TlsCrypto crypto, String nameData) {
@@ -30,7 +33,6 @@ public class TlcpScanClient extends DefaultTlsScanClient {
         super(crypto);
     }
 
-
     public TlcpScanClient(String nameData) {
         super(nameData);
     }
@@ -38,7 +40,6 @@ public class TlcpScanClient extends DefaultTlsScanClient {
     public TlcpScanClient() {
         super();
     }
-
 
     @Override
     public ProtocolVersion[] getSupportedVersions() {
@@ -49,7 +50,6 @@ public class TlcpScanClient extends DefaultTlsScanClient {
     public ProtocolVersion[] getProtocolVersions() {
         return TlcpScanClient.PROTOCOL_VERSIONS;
     }
-
 
     @Override
     protected int[] getSupportedCipherSuites() {
@@ -73,5 +73,25 @@ public class TlcpScanClient extends DefaultTlsScanClient {
 
     @Override
     public void notifySecureRenegotiation(boolean secureRenegotiation) throws IOException {
+    }
+
+    /**
+     * Override to include curveSM2 for TLCP/GMSSL support
+     */
+    @Override
+    protected Vector getSupportedGroups(Vector namedGroupRoles) {
+        Vector supportedGroups = super.getSupportedGroups(namedGroupRoles);
+
+        // Ensure curveSM2 is included for TLCP/GMSSL
+        if (supportedGroups == null) {
+            supportedGroups = new Vector();
+        }
+
+        // Add curveSM2 at the beginning for TLCP preference
+        if (!supportedGroups.contains(Integers.valueOf(NamedGroup.curveSM2))) {
+            supportedGroups.insertElementAt(Integers.valueOf(NamedGroup.curveSM2), 0);
+        }
+
+        return supportedGroups;
     }
 }
