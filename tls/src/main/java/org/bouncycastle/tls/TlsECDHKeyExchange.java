@@ -50,7 +50,10 @@ public class TlsECDHKeyExchange
 
     public void processServerCertificate(Certificate serverCertificate) throws IOException
     {
-        this.ecdhPeerCertificate = serverCertificate.getCertificateAt(0).checkUsageInRole(TlsCertificateRole.ECDH);
+        int certificateRole = (keyExchange == KeyExchangeAlgorithm.SM2)
+            ? TlsCertificateRole.SM2_ENCRYPTION
+            : TlsCertificateRole.ECDH;
+        this.ecdhPeerCertificate = serverCertificate.getCertificateAt(0).checkUsageInRole(certificateRole);
     }
 
     public short[] getClientCertificateTypes()
@@ -81,7 +84,10 @@ public class TlsECDHKeyExchange
 
     public void processClientCertificate(Certificate clientCertificate) throws IOException
     {
-        this.ecdhPeerCertificate = clientCertificate.getCertificateAt(0).checkUsageInRole(TlsCertificateRole.ECDH);
+        int certificateRole = (keyExchange == KeyExchangeAlgorithm.SM2)
+            ? TlsCertificateRole.SM2_ENCRYPTION
+            : TlsCertificateRole.ECDH;
+        this.ecdhPeerCertificate = clientCertificate.getCertificateAt(0).checkUsageInRole(certificateRole);
     }
 
     public void processClientKeyExchange(InputStream input) throws IOException
